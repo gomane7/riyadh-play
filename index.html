@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <title>عقار الرياض · الفلاح</title>
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #14110e; }
+    #unity-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; background: #14110e; touch-action: none; }
+    #loader { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+              gap: 18px; color: #e9e4d8; font: 18px/1.6 "Segoe UI", Tahoma, "Geeza Pro", sans-serif; }
+    #loader h1 { margin: 0; font-size: 28px; color: #c9a45c; font-weight: 600; }
+    #bar { width: min(420px, 70vw); height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+    #fill { width: 0; height: 100%; background: #c9a45c; transition: width 0.2s; }
+    #note { font-size: 13px; color: #9a948a; }
+    #error { color: #e0675c; font-size: 15px; display: none; max-width: 80vw; text-align: center; }
+  </style>
+</head>
+<body>
+  <canvas id="unity-canvas" tabindex="-1"></canvas>
+  <div id="loader">
+    <h1>عقار الرياض · حي الفلاح</h1>
+    <div id="bar"><div id="fill"></div></div>
+    <div id="note">جاري التحميل… المرة الأولى أطول، وبعدها يُحفظ في المتصفح.</div>
+    <div id="error"></div>
+  </div>
+  <script src="Build/webgl.loader.js"></script>
+  <script>
+    const canvas = document.getElementById("unity-canvas");
+    createUnityInstance(canvas, {
+      dataUrl: "Build/webgl.data.unityweb",
+      frameworkUrl: "Build/webgl.framework.js.unityweb",
+      codeUrl: "Build/webgl.wasm.unityweb",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "RiyadhEstate",
+      productName: "Riyadh Estate - Al Falah",
+      productVersion: "1.0",
+      devicePixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
+    }, (p) => { document.getElementById("fill").style.width = (p * 100) + "%"; })
+    .then(() => { document.getElementById("loader").style.display = "none"; })
+    .catch((e) => { const el = document.getElementById("error"); el.textContent = "تعذر التشغيل: " + e; el.style.display = "block"; });
+  </script>
+</body>
+</html>
