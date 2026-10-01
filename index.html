@@ -3,30 +3,74 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
-  <title>عقار الرياض · الفلاح</title>
+  <title>عقار موازي · Parallel Estate</title>
   <style>
-    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #14110e; }
-    #unity-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; background: #14110e; touch-action: none; }
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #151C22; }
+    #unity-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; background: #151C22; touch-action: none; }
+    /* The loader never takes clicks: the game underneath stays usable even if the loader lingers. */
     #loader { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-              gap: 18px; color: #e9e4d8; font: 18px/1.6 "Segoe UI", Tahoma, "Geeza Pro", sans-serif; }
-    #loader h1 { margin: 0; font-size: 28px; color: #c9a45c; font-weight: 600; }
+              gap: 16px; color: #ECE6DA; font: 18px/1.6 "Segoe UI", Tahoma, "Geeza Pro", sans-serif; pointer-events: none;
+              background: #151C22; transition: opacity 0.4s; }
+    #loader.hidden { opacity: 0; visibility: hidden; }
+    #loader h1 { margin: 0; font-size: 30px; color: #E6AF62; font-weight: 600; }
+    #loader h2 { margin: -10px 0 4px; font-size: 16px; color: #A99F8E; font-weight: 400; }
     #bar { width: min(420px, 70vw); height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
-    #fill { width: 0; height: 100%; background: #c9a45c; transition: width 0.2s; }
+    #fill { width: 0; height: 100%; background: #E6AF62; transition: width 0.2s; }
     #note { font-size: 13px; color: #9a948a; }
-    #error { color: #e0675c; font-size: 15px; display: none; max-width: 80vw; text-align: center; }
+    #credit { position: fixed; bottom: 14px; font-size: 12px; color: #8a8478; pointer-events: auto; }
+    #credit a { color: #c9b07c; }
+    #error { color: #e0675c; font-size: 15px; display: none; max-width: 80vw; text-align: center; pointer-events: auto; }
+    #lost { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(21,28,34,0.92);
+            color: #ECE6DA; font: 17px/1.7 "Segoe UI", Tahoma, "Geeza Pro", sans-serif; text-align: center; z-index: 10; }
+    #lost div { max-width: 460px; padding: 24px; }
+    #lost button { margin-top: 14px; font: inherit; color: #151C22; background: #E6AF62; border: 0; border-radius: 8px;
+                   padding: 8px 22px; cursor: pointer; }
   </style>
+  <script>
+    // Errors thrown by browser extensions (MetaMask and others inject scripts into every page) are not
+    // the game's: swallow them before Unity's own error listeners can treat them as a startup failure.
+    window.isExtensionError = function (x) {
+      var s = "";
+      try {
+        if (x && typeof x === "object") s = [x.filename, x.message, x.stack, x.error && x.error.stack, x.reason && x.reason.stack,
+                                              x.reason && x.reason.message, x.reason].join(" ");
+        else s = String(x);
+      } catch (e) { return false; }
+      return /(chrome|moz|safari|safari-web|ms-browser)-extension:\/\//i.test(s);
+    };
+    window.addEventListener("error", function (e) {
+      if (window.isExtensionError(e)) { e.preventDefault(); e.stopImmediatePropagation(); }
+    }, true);
+    window.addEventListener("unhandledrejection", function (e) {
+      if (window.isExtensionError(e)) { e.preventDefault(); e.stopImmediatePropagation(); }
+    }, true);
+  </script>
 </head>
 <body>
   <canvas id="unity-canvas" tabindex="-1"></canvas>
   <div id="loader">
-    <h1>عقار الرياض · حي الفلاح</h1>
+    <h1>عقار موازي</h1>
+    <h2>حي الفلاح · الرياض</h2>
     <div id="bar"><div id="fill"></div></div>
     <div id="note">جاري التحميل… المرة الأولى أطول، وبعدها يُحفظ في المتصفح.</div>
     <div id="error"></div>
+    <div id="credit">بيانات الخريطة © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">مساهمو OpenStreetMap</a> (ODbL) · التضاريس: Copernicus DEM · الخامات: Poly Haven (CC0)</div>
   </div>
+  <div id="lost"><div>
+    توقف عرض الرسوم: المتصفح أوقف كرت الشاشة، غالباً بسبب ضغط الذاكرة.<br>
+    تقدّمك محفوظ تلقائياً.
+    <br><button onclick="location.reload()">إعادة التشغيل</button>
+  </div></div>
   <script src="Build/webgl.loader.js"></script>
   <script>
     const canvas = document.getElementById("unity-canvas");
+    const loader = document.getElementById("loader");
+    function hideLoader() { loader.classList.add("hidden"); }
+    // The GPU can drop the WebGL context (memory pressure): say so and offer a restart.
+    canvas.addEventListener("webglcontextlost", function (e) {
+      e.preventDefault();
+      document.getElementById("lost").style.display = "flex";
+    }, false);
     createUnityInstance(canvas, {
       dataUrl: "Build/webgl.data.unityweb",
       frameworkUrl: "Build/webgl.framework.js.unityweb",
@@ -36,9 +80,18 @@
       productName: "Riyadh Estate - Al Falah",
       productVersion: "1.0",
       devicePixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
-    }, (p) => { document.getElementById("fill").style.width = (p * 100) + "%"; })
-    .then(() => { document.getElementById("loader").style.display = "none"; })
-    .catch((e) => { const el = document.getElementById("error"); el.textContent = "تعذر التشغيل: " + e; el.style.display = "block"; });
+    }, function (p) {
+      document.getElementById("fill").style.width = (p * 100) + "%";
+      if (p >= 1) setTimeout(hideLoader, 4000);   // safety net: never leave the loader over a running game
+    })
+    .then(hideLoader)
+    .catch(function (e) {
+      if (window.isExtensionError(e)) { console.warn("Ignored browser-extension error:", e); hideLoader(); return; }
+      loader.classList.remove("hidden");
+      const el = document.getElementById("error");
+      el.textContent = "تعذر التشغيل: " + e;
+      el.style.display = "block";
+    });
   </script>
 </body>
 </html>

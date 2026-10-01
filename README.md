@@ -3,7 +3,7 @@
 Play: https://gomane7.github.io/riyadh-play/
 
 This repository holds only the built WebGL player, published from the private project
-(commit 5d10da0) by `setup/publish-web.ps1`.
+(commit 5950b34) by `setup/publish-web.ps1`.
 
 Map data (c) OpenStreetMap contributors, ODbL 1.0 - https://www.openstreetmap.org/copyright
 Terrain: Copernicus DEM GLO-30. Textures and models: Poly Haven (CC0). Font: IBM Plex Sans Arabic (OFL 1.1).
