@@ -3,7 +3,7 @@
 Play: https://gomane7.github.io/riyadh-play/
 
 This repository holds only the built WebGL player, published from the private project
-(commit e923958) by `setup/publish-web.ps1`.
+(commit d0f33ff) by `setup/publish-web.ps1`.
 
 Map data (c) OpenStreetMap contributors, ODbL 1.0 - https://www.openstreetmap.org/copyright
 Building footprints: Overture Maps Foundation, incl. Microsoft ML Building Footprints (ODbL 1.0).
